@@ -1,3 +1,5 @@
+# The .dockerignore file is used to specify which files and directories should not be included in the Docker image when building the container. 
+# This helps to reduce the size of the image and prevent unnecessary files from being added.
 # Logs
 logs
 *.log

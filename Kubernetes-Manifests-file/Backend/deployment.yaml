@@ -8,9 +8,14 @@ metadata:
     env: demo
 spec:
   replicas: 2
+  # RollingUpdate strategy allows updates to be applied gradually, ensuring that some instances of the application
+  # are always available during the update process.
+  # Recreate strategy will terminate all existing pods before creating new ones.
   strategy:
     type: RollingUpdate
     rollingUpdate:
+      # Specifies the maximum number of Pods that can be created over the desired number of Pods during an update.
+      # In this case, the value is set to 1, meaning only one additional Pod can be created during the update process.
       maxSurge: 1
       maxUnavailable: 25%
   selector:
@@ -22,43 +27,63 @@ spec:
         role: api
     spec:
       imagePullSecrets:
-      - name: ecr-registry-secret
+        # This section specifies the name of the kubernetes secret to be used for pulling the Docker image.
+        # The secret must be created manually before deploying the application.
+        - name: ecr-registry-secret
       containers:
-      - name: api
-        image: 407622020962.dkr.ecr.us-east-1.amazonaws.com/backend:1
-        imagePullPolicy: Always
-        env:
-          - name: MONGO_CONN_STR
-            value: mongodb://mongodb-svc:27017/todo?directConnection=true
-          - name: MONGO_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: mongo-sec
-                key: username
-          - name: MONGO_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: mongo-sec
-                key: password
-        ports:
-        - containerPort: 3500
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 3500
-          initialDelaySeconds: 2
-          periodSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 3500
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-        startupProbe:
-          httpGet:
-            path: /started
-            port: 3500
-          initialDelaySeconds: 0
-          periodSeconds: 10
-          failureThreshold: 30
+        - name: api
+          image: 949092020730.dkr.ecr.us-east-1.amazonaws.com/backend:1
+          imagePullPolicy: Always
+          env:
+            - name: MONGO_CONN_STR
+              value: mongodb://mongodb-svc:27017/todo?directConnection=true
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  # This kubernetes secret must be in the same namespace as the deployment.
+                  # namespace: three-tier
+                  name: mongo-sec
+                  key: username
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-sec
+                  key: password
+          ports:
+            # This is the port number that the container listens on for mongoDB connections.
+            - containerPort: 3500
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3500
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3500
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+          startupProbe:
+            httpGet:
+              path: /started
+              port: 3500
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            failureThreshold: 30
+
+            ################################
+            # This code compares three different probes: livenessProbe, readinessProbe, and startupProbe.
+            #
+            # livenessProbe:
+            # - Purpose: Checks if the application is running. If the probe fails, the container is restarted.
+            # - Use Case: Ensures that the application is not stuck or deadlocked.
+            #
+            # readinessProbe:
+            # - Purpose: Checks if the application is ready to serve traffic. If the probe fails, the container is removed from the service endpoints.
+            # - Use Case: Ensures that the application is ready to handle requests.
+            #
+            # startupProbe:
+            # - Purpose: Checks if the application has started successfully. If the probe fails, the container is killed and restarted.
+            # - Use Case: Useful for applications with long startup times, ensuring they are fully started before other probes are applied.

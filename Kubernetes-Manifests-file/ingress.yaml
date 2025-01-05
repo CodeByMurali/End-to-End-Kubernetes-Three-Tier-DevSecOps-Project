@@ -3,6 +3,21 @@ kind: Ingress
 metadata:
   name: mainlb
   namespace: three-tier
+  # This section contains annotations for configuring an AWS Application Load Balancer (ALB) with Kubernetes Ingress.
+  # - alb.ingress.kubernetes.io/scheme: Specifies the scheme of the ALB. "internet-facing" means the ALB is publicly accessible.
+  # - alb.ingress.kubernetes.io/target-type: Defines the type of target for the ALB.
+  #
+  # - alb.ingress.kubernetes.io/target-type: Defines the type of target for the ALB. "ip" indicates that the ALB targets IP addresses.
+  #   In AWS Application Load Balancer (ALB) configurations, there are two primary target types:
+  #   1. Instance: Routes traffic to the instance IDs of the EC2 instances.
+  #   2. IP: Routes traffic to the IP addresses of the targets.
+  #   Why Use `ip` for EKS?
+  #   - Pod IPs: Each Kubernetes pod gets its own IP address. Using `ip` allows the ALB to route traffic directly to pod IPs.
+  #   - Flexibility: Supports dynamic scaling as pods can be frequently created and destroyed, with changing IP addresses.
+  #   - Compatibility: Ensures compatibility with the Kubernetes networking model, where services are exposed via pod IPs.
+  #
+  #
+  # - alb.ingress.kubernetes.io/listen-ports: Configures the ports that the ALB listens on. In this case, it listens on port 80 for HTTP traffic.
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
@@ -11,7 +26,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: amanpathakdevops.study
+    - host: muralirajendran.click
       http:
         paths:
           - path: /api

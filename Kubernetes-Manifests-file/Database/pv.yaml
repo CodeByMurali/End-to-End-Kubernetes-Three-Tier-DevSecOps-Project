@@ -4,10 +4,66 @@ metadata:
   name: mongo-pv
   namespace: three-tier
 spec:
-  capacity: 
+  capacity:
     storage: 1Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
+  # The hostPath field specifies the path on the host machine
+  # that is used to store the data.
   hostPath:
     path: /data/db
+################################################
+
+# In order to create a EBS volume and attach it to pod
+
+# 1. Defines how the EBS volume should be provisioned dynamically.
+
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: ebs-sc
+# provisioner: ebs.csi.aws.com
+# parameters:
+#   type: gp2           # EBS volume type (e.g., gp2, gp3, io1)
+#   fsType: ext4        # Filesystem type
+#   encrypted: "true"   # Optional: Enable encryption
+# reclaimPolicy: Delete # Automatically delete the volume when the PVC is deleted
+# volumeBindingMode: WaitForFirstConsumer # Volume is provisioned only when a Pod is scheduled
+
+# Requests storage dynamically based on the StorageClass.
+
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: ebs-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteOnce # Specifies single-node access
+#   resources:
+#     requests:
+#       storage: 5Gi  # Size of the volume
+#   storageClassName: ebs-sc
+
+# Uses the dynamically provisioned EBS volume.
+
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: ebs-pod
+# spec:
+#   containers:
+#   - name: app
+#     image: nginx
+#     volumeMounts:
+#     - mountPath: "/data" # Path inside the container
+#       name: ebs-volume
+#   volumes:
+#   - name: ebs-volume
+#     persistentVolumeClaim:
+#       claimName: ebs-pvc
+
+# Explanation
+# StorageClass: Automates volume creation when the PVC is created. The parameters (type, fsType, etc.) define the EBS volume attributes.
+# PVC: Requests storage from the StorageClass. Kubernetes creates the volume automatically.
+# Pod: Mounts the dynamically created volume via the PVC.

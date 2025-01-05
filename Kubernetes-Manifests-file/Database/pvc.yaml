@@ -3,9 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: mongo-volume-claim
   namespace: three-tier
-spec: 
-  accessModes:  
+spec:
+  accessModes:
     - ReadWriteOnce
+    # Use the default StorageClass if available, otherwise wait for manual binding.
   storageClassName: ""
   resources:
     requests:
