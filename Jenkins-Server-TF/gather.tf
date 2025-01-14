@@ -8,3 +8,10 @@ data "aws_ami" "ami" {
 
   owners = ["099720109477"]
 }
+
+# Data block to fetch the snapshot
+# I took the snapshot of the Jenkins server and stored it in the snapshot_id variable 
+# So i can use the previously installed utilities in my jump server
+data "aws_ebs_snapshot" "snapshot" {
+  snapshot_id = var.snapshot_id
+}
