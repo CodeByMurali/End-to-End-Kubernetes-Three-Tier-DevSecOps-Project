@@ -32,7 +32,7 @@ spec:
         - name: ecr-registry-secret
       containers:
         - name: api
-          image: 949092020730.dkr.ecr.us-east-1.amazonaws.com/project2-three-tier-pipeline/backend:1
+          image: 949092020730.dkr.ecr.us-east-1.amazonaws.com/project2-three-tier-pipeline/backend:14
           imagePullPolicy: Always
           env:
             - name: MONGO_CONN_STR
